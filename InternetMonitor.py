@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, filedialog, PhotoImage
+from tkinter import ttk, scrolledtext, filedialog
 import time
 import socket
 import os
@@ -8,6 +8,8 @@ import subprocess
 import json
 import pystray
 from PIL import Image
+import webbrowser
+
 
 # Caminho para o arquivo de configuração
 config_file = "config.json"
@@ -15,7 +17,7 @@ config_file = "config.json"
 # Obtenha o diretório do executável em execução
 diretorio_do_executavel = os.path.dirname(sys.executable)
 
-# Construa caminhos para suas imagens dentro da pasta 'img'
+# Construindo um caminho C://.../img
 caminho_img1 = os.path.join(diretorio_do_executavel, "img", "img1.png")
 caminho_img2 = os.path.join(diretorio_do_executavel, "img", "img2.png")
 caminho_icone_tray = os.path.join(diretorio_do_executavel, "img", "icone.png")
@@ -27,6 +29,7 @@ def on_exit(icon, item):
     root.deiconify()
     root.destroy()
 
+# Função TEMPORÁRIA pra fechar o app
 def on_exit_2():
     root.deiconify()
     root.destroy()
@@ -35,6 +38,8 @@ def on_exit_2():
 def on_minimize(icon, item):
     root.iconify()
 
+# Essa função ia ser usada ao usuário clicar no X pra fechar o app
+# Pra fechar o app de verdade ele precisaria fechar na bandeja.
 def minimize_to_system_tray():
     root.iconify()  # Minimize a janela ao ícone da bandeja do sistema
     root.withdraw()
@@ -149,9 +154,8 @@ def abrir_pasta_logs():
 
 # Função para abrir o link no navegador padrão
 def abrir_link():
-    # Substitua o URL abaixo pelo link que deseja abrir
-    link = "https://ko-fi.com/shinkirodev"
-    subprocess.Popen(["start", link], shell=True)
+    url = "https://ko-fi.com/shinkirodev"
+    webbrowser.open(url)
 
 def abrir_nd_link():
     # Substitua o URL abaixo pelo link que deseja abrir
@@ -210,17 +214,28 @@ ver_logs_button.pack(pady=5)
 rodape_frame = ttk.Frame(root)
 rodape_frame.pack(expand=True, fill="both")
 
-rodape_texto = "Esse aplicativo apenas registra localmente em um arquivo de texto quando sua internet cai, pois ele tenta acessar o Google ou acessar a interface de rede. Em outras palavras, esse app não envia seus dados para ninguém."
+rodape_texto = ("Esse aplicativo apenas registra localmente em um arquivo de texto quando sua internet cai,"
+                " pois ele tenta acessar o Google ou acessar a interface de rede. Em outras palavras,"
+                " esse app não envia seus dados para ninguém.")
 rodape_label = ttk.Label(rodape_frame, text=rodape_texto, wraplength=400, justify="center")
 rodape_label.pack(pady=10)
+
+frame = ttk.Frame(root)
+frame.pack()
+
+button_frame = ttk.Frame(frame)
+button_frame.grid(row=0, column=0, padx=10)
 
 img1 = tk.PhotoImage(file=caminho_img1)
 img2 = tk.PhotoImage(file=caminho_img2)
 
-img1_button = ttk.Button(root, image=img1)
-img1_button.pack(side="bottom")
-img2_button = ttk.Button(root, image=img2)
-img2_button.pack(side="bottom")
+img1_button = ttk.Button(button_frame, image=img1, command=abrir_link)
+img1_button.grid(row=0, column=0, padx=0, pady=25)
+
+img2_button = ttk.Button(button_frame, image=img2, command=abrir_nd_link)
+img2_button.grid(row=0, column=1, padx=10, pady=25)
+
+
 
 # Função para atualizar o texto "Monitorando Conexão" com animação
 def atualizar_monitorando_texto():
@@ -241,6 +256,7 @@ atualizar_registro_recente()
 
 
 # Criar um ícone na bandeja do sistema
+# Por enquanto sem uso, necessário fazer o app rodar em 2nd plano adequadamente e então voltar nesse item
 def criar_icone_bandeja():
     minimize_to_system_tray()
     menu = (
@@ -251,10 +267,8 @@ def criar_icone_bandeja():
     image = Image.open(caminho_icone_tray)  # Substitua "icone.png" pelo caminho da imagem do ícone.
 
     icon = pystray.Icon("InternetMonitor", image, "Internet Monitor By ShinkiroDev", menu)
-
-
-
     icon.run()
+
 
 # Configurar o evento para minimizar a janela para a bandeja quando o botão de minimizar padrão for clicado
 root.protocol("WM_DELETE_WINDOW", on_exit_2)
